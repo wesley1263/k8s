@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: keycloak-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/wesley1263/k8s.git'  # Substitua pelo URL do seu repositório Git
+    targetRevision: HEAD
+    path: '.'
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: develop
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
