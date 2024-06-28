@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: 123456Qw@
+      KC_DB_URL_HOST: postgres
+      DB_VENDOR: postgres
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: keycloak
+      KC_HOSTNAME: keycloak.local
+      KC_HOSTNAME_STRICT: 'false'
+      #KC_PROXY: edge # Localmente
+      KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/keycloak.crt # Produção
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/keycloak.key # Produção
+
+    ports:
+      #- "8088:8080" # Localmente
+      - "8443:8443"
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+      - ./themes:/opt/keycloak/themes
+      - ./certs:/etc/x509/https # Produção
+    command: ["start", "--optimized"]
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+volumes:
+  keycloak-data:
+    driver: local
+  postgres-data:
+    driver: local
