@@ -1,0 +1,44 @@
+---
+- name: Install Rancher on k3d
+  hosts: local
+  become: true
+  become_method: sudo
+  become_user: root
+  tasks:
+
+    - name: Add Rancher Helm repo
+      shell: |
+        helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+        helm repo update
+
+    - name: Add Jetstack Helm repo for Cert Manager
+      shell: |
+        helm repo add jetstack https://charts.jetstack.io
+        helm repo update
+
+    - name: Install Cert Manager CRDs
+      shell: |
+        kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.4.0/cert-manager.crds.yaml
+
+    - name: Install Cert Manager
+      shell: |
+        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.4.0
+
+    - name: Wait for Cert Manager to be ready
+      shell: |
+        kubectl -n cert-manager rollout status deploy/cert-manager
+        kubectl -n cert-manager rollout status deploy/cert-manager-webhook
+        kubectl -n cert-manager rollout status deploy/cert-manager-cainjector
+
+    - name: Create namespace for Rancher
+      shell: |
+        kubectl create namespace cattle-system
+
+    - name: Install Rancher
+      shell: |
+        helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=rancher.local --set replicas=3
+
+    - name: Patch nod port for Rancher
+      shell: |
+        kubectl -n cattle-system patch svc rancher -p '{"spec": {"type": "NodePort"}}'
+  
