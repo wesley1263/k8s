@@ -1,0 +1,22 @@
+---
+- name: Ensure kubectl is installed
+  apt:
+    name: kubectl
+    state: present
+  become: yes
+
+- name: Configure kubectl to connect to the cluster
+  command: >
+    kubectl config set-cluster {{ kubernetes_cluster_name }} 
+    --server=https://{{ kubernetes_cluster_endpoint }}
+    --insecure-skip-tls-verify=true
+
+- name: Configure kubectl to use context
+  command: >
+    kubectl config set-context {{ kubernetes_cluster_name }} 
+    --cluster={{ kubernetes_cluster_name }} 
+    --user=default
+
+- name: Use the new context
+  command: >
+    kubectl config use-context {{ kubernetes_cluster_name }}

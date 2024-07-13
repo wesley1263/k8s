@@ -1,0 +1,39 @@
+# sonarqube-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarqube
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarqube
+  template:
+    metadata:
+      labels:
+        app: sonarqube
+    spec:
+      containers:
+      - name: sonarqube
+        image: sonarqube:lts
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - mountPath: /opt/sonarqube/data
+          name: sonarqube-persistent-storage
+      volumes:
+      - name: sonarqube-persistent-storage
+        persistentVolumeClaim:
+          claimName: sonarqube-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarqube
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 9000
+  selector:
+    app: sonarqube
