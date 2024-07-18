@@ -1,6 +1,9 @@
 ---
 - name: Instalar e Configurar Rancher no Kubernetes
   hosts: localhost
+  vars:
+    rancher_hostname: "raqwes.com"  # Substitua pelo seu domínio
+
   tasks:
     - name: Adicionar repositório Helm do Rancher
       shell: |
@@ -52,9 +55,9 @@
             subject:
               organizations:
                 - My Organization
-            commonName: raqwes.com
+            commonName: "{{ rancher_hostname }}"
             dnsNames:
-              - raqwes.com
+              - "{{ rancher_hostname }}"
             issuerRef:
               name: rancher-issuer
               kind: Issuer
@@ -63,7 +66,7 @@
       shell: |
         helm install rancher rancher-latest/rancher \
           --namespace cattle-system \
-          --set hostname=raqwes.com
+          --set hostname={{ rancher_hostname }}
       args:
         executable: /bin/bash
 
@@ -83,7 +86,7 @@
           spec:
             ingressClassName: nginx
             rules:
-              - host: raqwes.com
+              - host: "{{ rancher_hostname }}"
                 http:
                   paths:
                     - path: /
@@ -95,7 +98,7 @@
                             number: 80
             tls:
               - hosts:
-                  - raqwes.com
+                  - "{{ rancher_hostname }}"
                 secretName: tls-rancher-ingress
 
     - name: Verificar pods do Rancher
