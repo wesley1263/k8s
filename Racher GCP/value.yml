@@ -1,0 +1,6 @@
+hostname: raqwes.com
+ingress:
+  extraAnnotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  tls:
+    source: rancher

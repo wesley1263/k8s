@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tls-rancher-ingress
+  namespace: cattle-system
+spec:
+  secretName: tls-rancher-ingress
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  subject:
+    organizations:
+    - ANDWES Solutions
+  commonName: raqwes.com
+  dnsNames:
+  - raqwes.com
+  issuerRef:
+    name: rancher-issuer
+    kind: Issuer
