@@ -5,11 +5,19 @@
   args:
     executable: /bin/bash
 
+- name: Pausar por 15 segundos
+  pause:
+    seconds: 15
+
 - name: Criar namespace para o Rancher
   kubernetes.core.k8s:
     api_version: v1
     kind: Namespace
-    name: cattle-system
+    name: cattle-
+    
+- name: Pausar por 15 segundos
+  pause:
+    seconds: 15
 
 - name: Instalar Cert-Manager
   shell: |
@@ -19,6 +27,10 @@
     kubectl -n cert-manager rollout status deploy/cert-manager-cainjector
   args:
     executable: /bin/bash
+
+- name: Pausar por 15 segundos
+  pause:
+    seconds: 15
 
 - name: Criar Issuer para Cert-Manager
   kubernetes.core.k8s:
@@ -31,6 +43,10 @@
         namespace: cattle-system
       spec:
         selfSigned: {}
+
+- name: Pausar por 15 segundos
+  pause:
+    seconds: 15
 
 - name: Criar Certificado TLS para Rancher
   kubernetes.core.k8s:
@@ -55,6 +71,10 @@
           name: rancher-issuer
           kind: Issuer
 
+- name: Pausar por 15 segundos
+  pause:
+    seconds: 15
+
 - name: Instalar Rancher com Helm
   shell: |
     helm install rancher rancher-latest/rancher \
@@ -62,6 +82,10 @@
       --set hostname={{ rancher_hostname }}
   args:
     executable: /bin/bash
+
+- name: Pausar por 15 segundos
+  pause:
+    seconds: 15
 
 - name: Criar Ingress para Rancher
   kubernetes.core.k8s:
@@ -94,6 +118,10 @@
               - "{{ rancher_hostname }}"
             secretName: tls-rancher-ingress
 
+- name: Pausar por 25 segundos
+  pause:
+    seconds: 25
+
 - name: Instalar o Nginx Ingress Controller usando o Helm
   shell: |
     helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -102,16 +130,27 @@
   args:
     executable: /bin/bash
 
+- name: Pausar por 15 segundos
+  pause:
+    seconds: 15
+
 - name: Verificar se o Nginx Ingress Controller está em execução
   shell: kubectl get pods -n ingress-nginx
   register: ingress_nginx
   args:
     executable: /bin/bash
 
+- name: Pausar por 15 segundos
+  pause:
+    seconds: 15
+
 - name: Exibir saída do Nginx Ingress Controller 
   debug:
     msg: "{{ ingress_nginx.stdout }}"
 
+- name: Pausar por 15 segundos
+  pause:
+    seconds: 15
 
 - name: Verificar o Serviço do Nginx Ingress Controller
   shell: kubectl get svc -n ingress-nginx
@@ -139,41 +178,6 @@
   register: rancher_pods
   args:
     executable: /bin/bash
-
-- name: Aplicando novamente o Ingress para Rancher depois de instalar Nginx Ingress Controller
-  kubernetes.core.k8s:
-    state: present
-    definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: rancher
-        namespace: cattle-system
-        annotations:
-          nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
-          nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
-          nginx.ingress.kubernetes.io/rewrite-target: /$2
-      spec:
-        ingressClassName: nginx
-        rules:
-          - host: "{{ rancher_hostname }}"
-            http:
-              paths:
-                - path: /
-                  pathType: ImplementationSpecific
-                  backend:
-                    service:
-                      name: rancher
-                      port:
-                        number: 80
-        tls:
-          - hosts:
-              - "{{ rancher_hostname }}"
-            secretName: tls-rancher-ingress
-
-- name: Exibir saída dos pods do Rancher
-  debug:
-    msg: "{{ rancher_pods.stdout }}"
 
 - name: Verificar logs do Nginx Ingress Controller
   shell: kubectl logs -l app.kubernetes.io/name=ingress-nginx -n ingress-nginx
