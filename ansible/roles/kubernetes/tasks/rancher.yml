@@ -140,6 +140,37 @@
   args:
     executable: /bin/bash
 
+- name: Aplicando novamente o Ingress para Rancher depois de instalar Nginx Ingress Controller
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: rancher
+        namespace: cattle-system
+        annotations:
+          nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+          nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+          nginx.ingress.kubernetes.io/rewrite-target: /$2
+      spec:
+        ingressClassName: nginx
+        rules:
+          - host: "{{ rancher_hostname }}"
+            http:
+              paths:
+                - path: /
+                  pathType: ImplementationSpecific
+                  backend:
+                    service:
+                      name: rancher
+                      port:
+                        number: 80
+        tls:
+          - hosts:
+              - "{{ rancher_hostname }}"
+            secretName: tls-rancher-ingress
+
 - name: Exibir saída dos pods do Rancher
   debug:
     msg: "{{ rancher_pods.stdout }}"
