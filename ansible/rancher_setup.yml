@@ -1,59 +1,8 @@
 ---
-- name: Setup Rancher on k3d
-  hosts: local
-  become: true
-  tasks:
+- name: Configuração Completa do Rancher no Kubernetes
+  hosts: localhost
+  # become: yes # Quando preciso de permissão root
+  gather_facts: yes
 
-#     - name: Install dependencies
-#       brew:
-#         name:
-#           - apt-transport-https
-#           - ca-certificates
-#           - curl
-#           - software-properties-common
-#         state: present
-
-#     - name: Install Docker
-#       shell: |
-#         brew install --cask docker
-#       when: ansible_os_family == "Darwin"
-
-#     - name: Install k3d
-#       shell: |
-#         brew install k3d
-#       when: ansible_os_family == "Darwin"
-
-#     - name: Create k3d cluster
-#       shell: |
-#         k3d cluster create mycluster --agents 2
-#       args:
-#         creates: /root/.kube/config
-
-#     - name: Install Helm
-#       shell: |
-#         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-#       when: ansible_os_family == "Darwin"
-
-    - name: Add Rancher Helm repo
-      shell: |
-        helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
-        helm repo update
-
-    - name: Install Cert Manager
-      shell: |
-        kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.4.0/cert-manager.crds.yaml
-        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.4.0
-
-    - name: Wait for Cert Manager to be ready
-      shell: |
-        kubectl -n cert-manager rollout status deploy/cert-manager
-        kubectl -n cert-manager rollout status deploy/cert-manager-webhook
-        kubectl -n cert-manager rollout status deploy/cert-manager-cainjector
-
-    - name: Create namespace for Rancher
-      shell: |
-        kubectl create namespace cattle-system
-
-    - name: Install Rancher
-      shell: |
-        helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=rancher.local --set replicas=3
+  roles:
+    - kubernetes

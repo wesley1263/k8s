@@ -1,1 +1,2 @@
 # Arquivo vars.yml pode ser colocado aqui como all.yml
+rancher_hostname: "raqwes.com"  # Substitua pelo seu domínio

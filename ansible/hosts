@@ -1,9 +1,9 @@
 [local]
 localhost ansible_connection=local
 
-[kubernetes]
-kubernetes-master ansible_host=IP_CLUSTER
+#[kubernetes]
+#kubernetes-master ansible_host=IP_CLUSTER
 
-[kubernetes:vars]
-kubernetes_cluster_name=devops-cluster
-kubernetes_cluster_endpoint=IP_CLUSTER
+#[kubernetes:vars]
+#kubernetes_cluster_name=devops-cluster
+#kubernetes_cluster_endpoint=IP_CLUSTER
